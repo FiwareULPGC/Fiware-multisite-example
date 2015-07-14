@@ -1,0 +1,9 @@
+site_name: Orion Context Broker
+
+pages:
+- Home: 'index.md'
+- Quick start guide: 'quick_start_guide.md'
+- Container-based deployment:
+  - 'Vagrant': 'vagrant.md'
+- Sample code contributions: 'code_contributions.md'
+- Deprecated features: 'deprecated.md'

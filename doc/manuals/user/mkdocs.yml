@@ -1,0 +1,23 @@
+site_name: User Guide
+
+pages:
+- Home: 'index.md'
+- 'Pagination': 'pagination.md'
+- 'Geolocation': 'geolocation.md'
+- 'Structured values for attributes': 'structured_attribute_valued.md'
+- 'Context Providers registration and request forwarding': 'context_providers.md'
+- 'Attribute metadata': 'metadata.md'
+- 'Filtering': 'filtering.md'
+- 'Multi tenancy': 'multitenancy.md'
+- 'Entity service paths': 'service_path.md'
+- 'Adding and removing attributes and entities': 'append_and_delete.md'
+- 'Updating registrations and subscriptions': 'updating_regs_and_subs.md'
+- 'Context Broker federation': 'federation.md'
+- 'Duration (for registrations and subscriptions)': 'duration.md'
+- 'Using empty types': 'empty_types.md'
+- 'Mixing standard and convenience operations': 'std_conv_mix.md'
+- 'HTTP and NGSI response codes': 'http_and_ngsi_sc.md'
+- 'Security considerations': 'security.md'
+- 'Known limitations': 'known_limitations.md'
+- 'Forbidden characters': 'forbidden_characters.md'
+- 'Walkthrough APIv1': 'walkthrough_apiv1.md'

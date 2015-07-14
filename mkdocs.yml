@@ -1,0 +1,9 @@
+site_name: Multi site demo
+
+pages:
+- Home: 'index.md'
+
+site_dir: 'test'
+theme_dir: 'test'
+
+subsites_dir: 'doc/manuals'

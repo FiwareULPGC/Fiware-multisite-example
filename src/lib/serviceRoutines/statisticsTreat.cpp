@@ -1,0 +1,439 @@
+/*
+*
+* Copyright 2013 Telefonica Investigacion y Desarrollo, S.A.U
+*
+* This file is part of Orion Context Broker.
+*
+* Orion Context Broker is free software: you can redistribute it and/or
+* modify it under the terms of the GNU Affero General Public License as
+* published by the Free Software Foundation, either version 3 of the
+* License, or (at your option) any later version.
+*
+* Orion Context Broker is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero
+* General Public License for more details.
+*
+* You should have received a copy of the GNU Affero General Public License
+* along with Orion Context Broker. If not, see http://www.gnu.org/licenses/.
+*
+* For those usages not covered by this license please contact with
+* iot_support at tid dot es
+*
+* Author: Ken Zangelin
+*/
+#include <string>
+#include <vector>
+
+#include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"
+
+#include "common/string.h"
+#include "common/globals.h"
+#include "common/tag.h"
+#include "common/statistics.h"
+#include "common/sem.h"
+
+#include "ngsi/ParseData.h"
+#include "rest/ConnectionInfo.h"
+#include "serviceRoutines/statisticsTreat.h"
+#include "mongoBackend/mongoConnectionPool.h"
+
+
+
+/* ****************************************************************************
+*
+* TAG_ADD - 
+*/
+#define TAG_ADD_COUNTER(tag, counter) valueTag(indent2, tag, counter + 1, ciP->outFormat, true)
+#define TAG_ADD_STRING(tag, value)  valueTag(indent2, tag, value, ciP->outFormat, true)
+
+
+
+/* ****************************************************************************
+*
+* statisticsTreat - 
+*/
+std::string statisticsTreat
+(
+  ConnectionInfo*            ciP,
+  int                        components,
+  std::vector<std::string>&  compV,
+  ParseData*                 parseDataP
+)
+{
+  std::string out     = "";
+  std::string tag     = "orion";
+  std::string indent  = "";
+  std::string indent2 = (ciP->outFormat == JSON)? indent + "    " : indent + "  ";
+
+  if (ciP->method == "DELETE")
+  {
+    noOfJsonRequests                                = -1;
+    noOfXmlRequests                                 = -1;
+    noOfRegistrations                               = -1;
+    noOfRegistrationErrors                          = -1;
+    noOfRegistrationUpdates                         = -1;
+    noOfRegistrationUpdateErrors                    = -1;
+    noOfDiscoveries                                 = -1;
+    noOfDiscoveryErrors                             = -1;
+    noOfAvailabilitySubscriptions                   = -1;
+    noOfAvailabilitySubscriptionErrors              = -1;
+    noOfAvailabilityUnsubscriptions                 = -1;
+    noOfAvailabilityUnsubscriptionErrors            = -1;
+    noOfAvailabilitySubscriptionUpdates             = -1;
+    noOfAvailabilitySubscriptionUpdateErrors        = -1;
+    noOfAvailabilityNotificationsReceived           = -1;
+    noOfAvailabilityNotificationsSent               = -1;
+
+    noOfQueries                                     = -1;
+    noOfQueryErrors                                 = -1;
+    noOfUpdates                                     = -1;
+    noOfUpdateErrors                                = -1;
+    noOfSubscriptions                               = -1;
+    noOfSubscriptionErrors                          = -1;
+    noOfSubscriptionUpdates                         = -1;
+    noOfSubscriptionUpdateErrors                    = -1;
+    noOfUnsubscriptions                             = -1;
+    noOfUnsubscriptionErrors                        = -1;
+    noOfNotificationsReceived                       = -1;
+    noOfNotificationsSent                           = -1;
+    noOfQueryContextResponses                       = -1;
+    noOfUpdateContextResponses                      = -1;
+
+    noOfContextEntitiesByEntityId                   = -1;
+    noOfContextEntityAttributes                     = -1;
+    noOfEntityByIdAttributeByName                   = -1;
+    noOfContextEntityTypes                          = -1;
+    noOfContextEntityTypeAttributeContainer         = -1;
+    noOfContextEntityTypeAttribute                  = -1;
+
+    noOfIndividualContextEntity                     = -1;
+    noOfIndividualContextEntityAttributes           = -1;
+    noOfIndividualContextEntityAttribute            = -1;
+    noOfUpdateContextElement                        = -1;
+    noOfAppendContextElement                        = -1;
+    noOfUpdateContextAttribute                      = -1;
+
+    noOfNgsi10ContextEntityTypes                    = -1;
+    noOfNgsi10ContextEntityTypesAttributeContainer  = -1;
+    noOfNgsi10ContextEntityTypesAttribute           = -1;
+    noOfNgsi10SubscriptionsConvOp                   = -1;
+
+    noOfAllContextEntitiesRequests                    = -1;
+    noOfAllEntitiesWithTypeAndIdRequests              = -1;
+    noOfIndividualContextEntityAttributeWithTypeAndId = -1;
+    noOfAttributeValueInstanceWithTypeAndId           = -1;
+    noOfContextEntitiesByEntityIdAndType              = -1;
+    noOfEntityByIdAttributeByNameIdAndType            = -1;
+
+    noOfLogRequests                                 = -1;
+    noOfVersionRequests                             = -1;
+    noOfExitRequests                                = -1;
+    noOfLeakRequests                                = -1;
+    noOfStatisticsRequests                          = -1;
+    noOfInvalidRequests                             = -1;
+    noOfRegisterResponses                           = -1;
+
+    semTimeReqReset();
+    semTimeTransReset();
+    mongoPoolConnectionSemWaitingTimeReset();
+    mutexTimeCCReset();
+
+    out += startTag(indent, tag, ciP->outFormat, true, true);
+    out += valueTag(indent2, "message", "All statistics counter reset", ciP->outFormat);
+    indent2 = (ciP->outFormat == JSON)? indent + "  " : indent;
+    out += endTag(indent2, tag, ciP->outFormat, false, false, true, true);
+    return out;
+  }
+
+  out += startTag(indent, tag, ciP->outFormat, true, true);
+
+  if (noOfXmlRequests != -1)
+  {
+    out += TAG_ADD_COUNTER("xmlRequests", noOfXmlRequests);
+  }
+
+  if (noOfJsonRequests != -1)
+  {
+    out += TAG_ADD_COUNTER("jsonRequests", noOfJsonRequests);
+  }
+
+  if (noOfRegistrations != -1)
+  {
+    out += TAG_ADD_COUNTER("registrations", noOfRegistrations);
+  }
+
+  if (noOfRegistrationUpdates != -1)
+  {
+    out += TAG_ADD_COUNTER("registrationUpdates", noOfRegistrationUpdates);
+  }
+
+  if (noOfDiscoveries != -1)
+  {
+    out += TAG_ADD_COUNTER("discoveries", noOfDiscoveries);
+  }
+
+  if (noOfAvailabilitySubscriptions != -1)
+  {
+    out += TAG_ADD_COUNTER("availabilitySubscriptions", noOfAvailabilitySubscriptions);
+  }
+
+  if (noOfAvailabilitySubscriptionUpdates != -1)
+  {
+    out += TAG_ADD_COUNTER("availabilitySubscriptionUpdates", noOfAvailabilitySubscriptionUpdates);
+  }
+
+  if (noOfAvailabilityUnsubscriptions != -1)
+  {
+    out += TAG_ADD_COUNTER("availabilityUnsubscriptions", noOfAvailabilityUnsubscriptions);
+  }
+
+  if (noOfAvailabilityNotificationsReceived != -1)
+  {
+    out += TAG_ADD_COUNTER("availabilityNotificationsReceived", noOfAvailabilityNotificationsReceived);
+  }
+
+  if (noOfQueries != -1)
+  {
+    out += TAG_ADD_COUNTER("queries", noOfQueries);
+  }
+
+  if (noOfUpdates != -1)
+  {
+    out += TAG_ADD_COUNTER("updates", noOfUpdates);
+  }
+
+  if (noOfSubscriptions != -1)
+  {
+    out += TAG_ADD_COUNTER("subscriptions", noOfSubscriptions);
+  }
+
+  if (noOfSubscriptionUpdates != -1)
+  {
+    out += TAG_ADD_COUNTER("subscriptionUpdates", noOfSubscriptionUpdates);
+  }
+
+  if (noOfUnsubscriptions != -1)
+  {
+    out += TAG_ADD_COUNTER("unsubscriptions", noOfUnsubscriptions);
+  }
+
+  if (noOfNotificationsReceived != -1)
+  {
+    out += TAG_ADD_COUNTER("notificationsReceived", noOfNotificationsReceived);
+  }
+
+  if (noOfQueryContextResponses != -1)
+  {
+    out += TAG_ADD_COUNTER("queryResponsesReceived", noOfQueryContextResponses);
+  }
+
+  if (noOfUpdateContextResponses != -1)
+  {
+    out += TAG_ADD_COUNTER("updateResponsesReceived", noOfUpdateContextResponses);
+  }
+
+  if (noOfQueryContextResponses != -1)
+  {
+    out += TAG_ADD_COUNTER("queryResponsesReceived", noOfQueryContextResponses);
+  }
+
+  if (noOfUpdateContextResponses != -1)
+  {
+    out += TAG_ADD_COUNTER("updateResponsesReceived", noOfUpdateContextResponses);
+  }
+
+  if (noOfContextEntitiesByEntityId != -1)
+  {
+    out += TAG_ADD_COUNTER("contextEntitiesByEntityId", noOfContextEntitiesByEntityId);
+  }
+
+  if (noOfContextEntityAttributes != -1)
+  {
+    out += TAG_ADD_COUNTER("contextEntityAttributes", noOfContextEntityAttributes);
+  }
+
+  if (noOfEntityByIdAttributeByName != -1)
+  {
+    out += TAG_ADD_COUNTER("entityByIdAttributeByName", noOfEntityByIdAttributeByName);
+  }
+
+  if (noOfContextEntityTypes != -1)
+  {
+    out += TAG_ADD_COUNTER("contextEntityTypes", noOfContextEntityTypes);
+  }
+
+  if (noOfContextEntityTypeAttributeContainer != -1)
+  {
+    out += TAG_ADD_COUNTER("contextEntityTypeAttributeContainer", noOfContextEntityTypeAttributeContainer);
+  }
+
+  if (noOfContextEntityTypeAttribute != -1)
+  {
+    out += TAG_ADD_COUNTER("contextEntityTypeAttribute", noOfContextEntityTypeAttribute);
+  }
+
+
+  if (noOfIndividualContextEntity != -1)
+  {
+    out += TAG_ADD_COUNTER("individualContextEntity", noOfIndividualContextEntity);
+  }
+
+  if (noOfIndividualContextEntityAttributes != -1)
+  {
+    out += TAG_ADD_COUNTER("individualContextEntityAttributes", noOfIndividualContextEntityAttributes);
+  }
+
+  if (noOfIndividualContextEntityAttribute != -1)
+  {
+    out += TAG_ADD_COUNTER("individualContextEntityAttribute", noOfIndividualContextEntityAttribute);
+  }
+
+  if (noOfUpdateContextElement != -1)
+  {
+    out += TAG_ADD_COUNTER("updateContextElement", noOfUpdateContextElement);
+  }
+
+  if (noOfAppendContextElement != -1)
+  {
+    out += TAG_ADD_COUNTER("appendContextElement", noOfAppendContextElement);
+  }
+
+  if (noOfUpdateContextAttribute != -1)
+  {
+    out += TAG_ADD_COUNTER("updateContextAttribute", noOfUpdateContextAttribute);
+  }
+
+
+  if (noOfNgsi10ContextEntityTypes != -1)
+  {
+    out += TAG_ADD_COUNTER("contextEntityTypesNgsi10", noOfNgsi10ContextEntityTypes);
+  }
+
+  if (noOfNgsi10ContextEntityTypesAttributeContainer != -1)
+  {
+    out += TAG_ADD_COUNTER("contextEntityTypeAttributeContainerNgsi10", noOfNgsi10ContextEntityTypesAttributeContainer);
+  }
+
+  if (noOfNgsi10ContextEntityTypesAttribute != -1)
+  {
+    out += TAG_ADD_COUNTER("contextEntityTypeAttributeNgsi10", noOfNgsi10ContextEntityTypesAttribute);
+  }
+
+  if (noOfNgsi10SubscriptionsConvOp != -1)
+  {
+    out += TAG_ADD_COUNTER("subscriptionsNgsi10ConvOp", noOfNgsi10SubscriptionsConvOp);
+  }
+
+
+  if (noOfAllContextEntitiesRequests != -1)
+  {
+    out += TAG_ADD_COUNTER("allContextEntitiesRequests", noOfAllContextEntitiesRequests);
+  }
+
+  if (noOfAllEntitiesWithTypeAndIdRequests != -1)
+  {
+    out += TAG_ADD_COUNTER("allContextEntitiesWithTypeAndIdRequests", noOfAllEntitiesWithTypeAndIdRequests);
+  }
+
+  if (noOfIndividualContextEntityAttributeWithTypeAndId != -1)
+  {
+    out += TAG_ADD_COUNTER("individualContextEntityAttributeWithTypeAndId", noOfIndividualContextEntityAttributeWithTypeAndId);
+  }
+
+  if (noOfAttributeValueInstanceWithTypeAndId != -1)
+  {
+    out += TAG_ADD_COUNTER("attributeValueInstanceWithTypeAndId", noOfAttributeValueInstanceWithTypeAndId);
+  }
+
+  if (noOfContextEntitiesByEntityIdAndType != -1)
+  {
+    out += TAG_ADD_COUNTER("contextEntitiesByEntityIdAndType", noOfContextEntitiesByEntityIdAndType);
+  }
+
+  if (noOfEntityByIdAttributeByNameIdAndType != -1)
+  {
+    out += TAG_ADD_COUNTER("entityByIdAttributeByNameIdAndType", noOfEntityByIdAttributeByNameIdAndType);
+  }
+
+  if (noOfLogRequests != -1)
+  {
+    out += TAG_ADD_COUNTER("logRequests", noOfLogRequests);
+  }
+
+  if (noOfVersionRequests != -1)
+  {
+    out += TAG_ADD_COUNTER("versionRequests", noOfVersionRequests);
+  }
+
+  if (noOfExitRequests != -1)
+  {
+    out += TAG_ADD_COUNTER("exitRequests", noOfExitRequests);
+  }
+
+  if (noOfLeakRequests != -1)
+  {
+    out += TAG_ADD_COUNTER("leakRequests", noOfLeakRequests);
+  }
+
+  if (noOfStatisticsRequests != -1)
+  {
+    out += TAG_ADD_COUNTER("statisticsRequests", noOfStatisticsRequests);
+  }
+
+  if (noOfInvalidRequests != -1)
+  {
+    out += TAG_ADD_COUNTER("invalidRequests", noOfInvalidRequests);
+  }
+
+  if (noOfRegisterResponses != -1)
+  {
+    out += TAG_ADD_COUNTER("registerResponses", noOfRegisterResponses);
+  }
+
+
+  if (noOfRegistrationErrors != -1)
+  {
+    out += TAG_ADD_COUNTER("registrationErrors", noOfRegistrationErrors);
+  }
+
+  if (noOfRegistrationUpdateErrors != -1)
+  {
+    out += TAG_ADD_COUNTER("registrationUpdateErrors", noOfRegistrationUpdateErrors);
+  }
+
+  if (noOfDiscoveryErrors != -1)
+  {
+    out += TAG_ADD_COUNTER("discoveryErrors", noOfDiscoveryErrors);
+  }
+
+  if (semTimeStatistics)
+  {
+    char requestSemaphoreWaitingTime[64];
+    semTimeReqGet(requestSemaphoreWaitingTime, sizeof(requestSemaphoreWaitingTime));
+    out += TAG_ADD_STRING("requestSemaphoreWaitingTime", requestSemaphoreWaitingTime);
+
+    char mongoPoolSemaphoreWaitingTime[64];
+    mongoPoolConnectionSemWaitingTimeGet(mongoPoolSemaphoreWaitingTime, sizeof(mongoPoolSemaphoreWaitingTime));
+    out += TAG_ADD_STRING("dbConnectionPoolWaitingTime", mongoPoolSemaphoreWaitingTime);
+
+    char transSemaphoreWaitingTime[64];
+    semTimeTransGet(transSemaphoreWaitingTime, sizeof(transSemaphoreWaitingTime));
+    out += TAG_ADD_STRING("transactionSemaphoreWaitingTime", transSemaphoreWaitingTime);
+
+    char ccMutextWaitingTime[64];
+    mutexTimeCCGet(ccMutextWaitingTime, sizeof(ccMutextWaitingTime));
+    out += TAG_ADD_STRING("curlContextMutextWaitingTime", ccMutextWaitingTime);
+  }
+
+  int now = getCurrentTime();
+  out += valueTag(indent2, "uptime_in_secs",             now - startTime,      ciP->outFormat, true);
+  out += valueTag(indent2, "measuring_interval_in_secs", now - statisticsTime, ciP->outFormat, false);
+
+  indent2 = (ciP->outFormat == JSON)? indent + "  " : indent;
+  out += endTag(indent2, tag, ciP->outFormat, false, false, true, true);
+
+  ciP->httpStatusCode = SccOk;
+  return out;
+}
